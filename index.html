@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎂 Birthday Surprise!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --pink: #ff6eb4;
+      --yellow: #ffe066;
+      --purple: #c084fc;
+      --teal: #34d399;
+      --bg: #fff0f6;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Nunito', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Confetti background blobs */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background:
+        radial-gradient(circle at 15% 20%, #ffd6ec88 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, #d4b4fe88 0%, transparent 40%),
+        radial-gradient(circle at 80% 15%, #bbf7d088 0%, transparent 35%),
+        radial-gradient(circle at 20% 85%, #fef08a88 0%, transparent 35%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      animation: fadeUp 0.8s ease both;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(40px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .emoji-row {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      display: flex; gap: .5rem; justify-content: center;
+      animation: wiggle 2s ease-in-out infinite;
+    }
+
+    @keyframes wiggle {
+      0%, 100% { transform: rotate(-3deg); }
+      50%       { transform: rotate(3deg); }
+    }
+
+    h1 {
+      font-family: 'Pacifico', cursive;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      background: linear-gradient(135deg, var(--pink), var(--purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2;
+      margin-bottom: .5rem;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      color: #8b5cf6;
+      margin-bottom: 2.5rem;
+      font-weight: 700;
+      letter-spacing: .05em;
+    }
+
+    /* Name input */
+    .name-section {
+      margin-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .6rem;
+    }
+
+    .name-section label {
+      font-weight: 900;
+      color: #7c3aed;
+      font-size: .95rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .name-section input {
+      border: 3px solid var(--pink);
+      border-radius: 50px;
+      padding: .55rem 1.4rem;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: #5b21b6;
+      background: #fff;
+      outline: none;
+      text-align: center;
+      transition: border-color .2s, box-shadow .2s;
+      width: 220px;
+    }
+
+    .name-section input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 4px #e9d5ff99;
+    }
+
+    /* Surprise Button */
+    .btn-surprise {
+      position: relative;
+      font-family: 'Pacifico', cursive;
+      font-size: 1.4rem;
+      background: linear-gradient(135deg, var(--pink) 0%, var(--purple) 100%);
+      color: #fff;
+      border: none;
+      border-radius: 100px;
+      padding: 1rem 2.5rem;
+      cursor: pointer;
+      box-shadow: 0 6px 30px #f472b655, 0 2px 8px #7c3aed33;
+      transition: transform .15s, box-shadow .15s;
+      letter-spacing: .04em;
+    }
+
+    .btn-surprise:hover {
+      transform: translateY(-3px) scale(1.04);
+      box-shadow: 0 12px 40px #f472b677, 0 4px 12px #7c3aed44;
+    }
+
+    .btn-surprise:active { transform: scale(.97); }
+
+    .btn-surprise .btn-icon { margin-right: .5rem; }
+
+    /* Floating confetti pieces */
+    .confetti-piece {
+      position: fixed;
+      width: 12px; height: 14px;
+      border-radius: 3px;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 999;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      0%   { opacity: 1; transform: translateY(-20px) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(105vh) rotate(720deg); }
+    }
+
+    /* POPUP OVERLAY */
+    .overlay {
+      position: fixed; inset: 0;
+      background: #0008;
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      opacity: 0; visibility: hidden;
+      transition: opacity .35s;
+    }
+
+    .overlay.show {
+      opacity: 1; visibility: visible;
+    }
+
+    .popup {
+      background: #fff;
+      border-radius: 28px;
+      padding: 2.5rem 2rem 2rem;
+      max-width: 380px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 80px #7c3aed44, 0 4px 24px #f472b644;
+      position: relative;
+      transform: scale(.7) translateY(40px);
+      transition: transform .4s cubic-bezier(.34,1.56,.64,1);
+    }
+
+    .overlay.show .popup {
+      transform: scale(1) translateY(0);
+    }
+
+    .close-btn {
+      position: absolute; top: 12px; right: 16px;
+      background: none; border: none; cursor: pointer;
+      font-size: 1.4rem; color: #d1d5db;
+      transition: color .2s, transform .2s;
+    }
+    .close-btn:hover { color: var(--pink); transform: rotate(90deg) scale(1.2); }
+
+    .cat-img {
+      width: 160px; height: 160px;
+      border-radius: 50%;
+      border: 5px solid var(--yellow);
+      object-fit: cover;
+      margin-bottom: 1rem;
+      box-shadow: 0 4px 24px #fde04788;
+      animation: bounceIn .6s .3s both;
+    }
+
+    @keyframes bounceIn {
+      from { transform: scale(0) rotate(-20deg); }
+      to   { transform: scale(1) rotate(0deg); }
+    }
+
+    .popup-title {
+      font-family: 'Pacifico', cursive;
+      font-size: 1.6rem;
+      background: linear-gradient(135deg, #f59e0b, #ec4899);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: .4rem;
+    }
+
+    .popup-name {
+      font-family: 'Pacifico', cursive;
+      font-size: 2rem;
+      color: var(--purple);
+      margin-bottom: .8rem;
+      animation: colorCycle 2s infinite alternate;
+    }
+
+    @keyframes colorCycle {
+      from { color: var(--purple); }
+      to   { color: var(--pink); }
+    }
+
+    .popup-msg {
+      font-size: 1rem;
+      color: #6b7280;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .popup-emojis {
+      font-size: 1.8rem;
+      margin-top: 1rem;
+      letter-spacing: .25rem;
+    }
+
+    /* floating baloons decoration */
+    .balloons {
+      position: fixed;
+      bottom: -60px;
+      left: 0; right: 0;
+      display: flex;
+      justify-content: space-around;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .balloon {
+      width: 50px; height: 64px;
+      border-radius: 50%;
+      animation: floatUp linear infinite;
+      opacity: .8;
+    }
+
+    @keyframes floatUp {
+      from { transform: translateY(0) rotate(-5deg); }
+      50%  { transform: translateY(-80vh) rotate(5deg); }
+      to   { transform: translateY(-160vh) rotate(-5deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="balloons" id="balloons"></div>
+
+  <div class="hero">
+    <div class="emoji-row">🎂 🎉 🎈</div>
+    <h1>It's Someone's<br>Special Day!</h1>
+    <p class="subtitle">A little something is waiting for you…</p>
+
+    <div class="name-section">
+      <label for="nameInput">Enter the Birthday Star's Name</label>
+      <input id="nameInput" type="text" placeholder="Your Beautiful Name" maxlength="30"/>
+    </div>
+
+    <button class="btn-surprise" onclick="showSurprise()">
+      <span class="btn-icon">🎁</span> Click for Surprise!
+    </button>
+  </div>
+
+  <!-- POPUP -->
+  <div class="overlay" id="overlay" onclick="closeSurprise(event)">
+    <div class="popup" id="popup">
+      <button class="close-btn" onclick="closePopup()">✕</button>
+
+      <!-- Using a public cat image from cataas.com -->
+      <img
+        class="cat-img"
+        src="https://cataas.com/cat?width=300&height=300"
+        alt="Happy cat"
+        id="catImg"
+        onerror="this.src='https://placekitten.com/300/300'"
+      />
+
+      <div class="popup-title">Happy Birthday To You,</div>
+      <div class="popup-name" id="popupName">🌟 Friend! 🌟</div>
+      <p class="popup-msg">Wishing you a day as bright and wonderful<br>as you are! 🥳 May all your wishes come true!</p>
+      <div class="popup-emojis">🎂 🎊 🎈 🎁 🐱</div>
+    </div>
+  </div>
+
+  <script>
+    // Generate floating balloons
+    const balloonColors = ['#ff6eb4','#ffe066','#c084fc','#34d399','#f97316','#38bdf8'];
+    const balloons = document.getElementById('balloons');
+    for (let i = 0; i < 10; i++) {
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.background = balloonColors[i % balloonColors.length];
+      b.style.animationDuration = (8 + Math.random() * 10) + 's';
+      b.style.animationDelay = (Math.random() * 12) + 's';
+      b.style.width = (35 + Math.random() * 30) + 'px';
+      b.style.height = (46 + Math.random() * 30) + 'px';
+      balloons.appendChild(b);
+    }
+
+    function showSurprise() {
+      const name = document.getElementById('nameInput').value.trim();
+      const nameEl = document.getElementById('popupName');
+
+      if (name) {
+        nameEl.textContent = '🌟 ' + name + '! 🌟';
+      } else {
+        nameEl.textContent = '🌟 You! 🌟';
+      }
+
+      // Refresh cat image each time
+      const catImg = document.getElementById('catImg');
+      catImg.src = 'https://cataas.com/cat?width=300&height=300&t=' + Date.now();
+
+      document.getElementById('overlay').classList.add('show');
+      launchConfetti();
+    }
+
+    function closeSurprise(e) {
+      if (e.target === document.getElementById('overlay')) closePopup();
+    }
+
+    function closePopup() {
+      document.getElementById('overlay').classList.remove('show');
+    }
+
+    function launchConfetti() {
+      const colors = ['#ff6eb4','#ffe066','#c084fc','#34d399','#f97316','#38bdf8','#f43f5e'];
+      for (let i = 0; i < 80; i++) {
+        const el = document.createElement('div');
+        el.className = 'confetti-piece';
+        el.style.left = Math.random() * 100 + 'vw';
+        el.style.top = '0';
+        el.style.background = colors[Math.floor(Math.random() * colors.length)];
+        el.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
+        el.style.animationDelay = (Math.random() * 1) + 's';
+        el.style.width = (8 + Math.random() * 10) + 'px';
+        el.style.height = (8 + Math.random() * 10) + 'px';
+        el.style.borderRadius = Math.random() > .5 ? '50%' : '3px';
+        document.body.appendChild(el);
+        el.addEventListener('animationend', () => el.remove());
+      }
+    }
+
+    // Allow Enter key to trigger surprise
+    document.getElementById('nameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') showSurprise();
+    });
+  </script>
+</body>
+</html>
